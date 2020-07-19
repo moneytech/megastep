@@ -1,0 +1,447 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concepts &#8212; megastep 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="FAQ" href="faq.html" />
+    <link rel="prev" title="Custom Kernels" href="tutorials/kernels.html" />
+
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+<script async defer data-domain="andyljones.com" src="https://plausible.io/js/plausible.js"></script>
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">megastep</a></h1>
+
+
+
+<p class="blurb">RL at 1m FPS</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=andyljones&repo=megastep&type=star&count=False&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Concepts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dotdicts-and-arrdicts">dotdicts and arrdicts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#raggeds">Raggeds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#geometries">Geometries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#agents">Agents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scenery">Scenery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rendering">Rendering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#physics">Physics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plotting">Plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#decision-world">Decision &amp; World</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#models">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#spaces-heads">Spaces &amp; Heads</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#env-patterns">Env Patterns</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="tutorials/kernels.html" title="previous chapter">Custom Kernels</a></li>
+      <li>Next: <a href="faq.html" title="next chapter">FAQ</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="concepts">
+<span id="id1"></span><h1>Concepts<a class="headerlink" href="#concepts" title="Permalink to this headline">¶</a></h1>
+<p>There are some ideas that are referenced in many places in this documentation.</p>
+<div class="section" id="dotdicts-and-arrdicts">
+<span id="dotdicts"></span><h2>dotdicts and arrdicts<a class="headerlink" href="#dotdicts-and-arrdicts" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>dotdicts and arrdicts are used in many places in megastep in preference to custom classes.</dt><dd><ul class="simple">
+<li><p>A <a class="reference internal" href="reference.html#rebar.dotdict.dotdict" title="rebar.dotdict.dotdict"><code class="xref py py-class docutils literal notranslate"><span class="pre">dotdict</span></code></a> is a dictionary with dot (attribute) access to its elements and a bunch of useful behaviours.</p></li>
+<li><p>A <a class="reference internal" href="reference.html#rebar.arrdict.arrdict" title="rebar.arrdict.arrdict"><code class="xref py py-class docutils literal notranslate"><span class="pre">arrdict</span></code></a> does everything a dotdict does, but with extra support for array/tensor elements.</p></li>
+</ul>
+</dd>
+</dl>
+<p>There are several serious issues with giving up on static typing, but in a research workflow I believe the benefits
+outweigh those costs.</p>
+<p>Everything below applies to both dotdicts and arrdicts, except for the indexing and binary operation support. Those are
+implemented on arrdicts alone, as they don’t make much sense for general elements.</p>
+<p>Here’re some example dotdicts that’ll get exercised in the examples below</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">objs</span> <span class="o">=</span> <span class="n">dotdict</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="o">=</span><span class="n">dotdict</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">b</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">c</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">d</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tensors</span> <span class="o">=</span> <span class="n">arrdict</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">b</span><span class="o">=</span><span class="n">arrdict</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">c</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">2</span><span class="p">])))</span>
+</pre></div>
+</div>
+<div class="section" id="attribute-access">
+<h3>Attribute access<a class="headerlink" href="#attribute-access" title="Permalink to this headline">¶</a></h3>
+<p>You can access elements with either <code class="docutils literal notranslate"><span class="pre">d[k]</span></code> or <code class="docutils literal notranslate"><span class="pre">d.k</span></code> notation, but you must assign new values with <code class="docutils literal notranslate"><span class="pre">d[k]</span> <span class="pre">=</span> <span class="pre">v</span></code> .</p>
+<p>TODO: Make setting with attributes illegal</p>
+<p>This convention is entirely taste, but it aligns well with the usual use-case of assigning values rarely and
+reading them regularly.</p>
+</div>
+<div class="section" id="forwarded-attributes">
+<h3>Forwarded Attributes<a class="headerlink" href="#forwarded-attributes" title="Permalink to this headline">¶</a></h3>
+<p>If you try to access an attribute that isn’t a method of <code class="docutils literal notranslate"><span class="pre">dict</span></code> or a key in the dotdict, then the attribute access
+instead be forwarded to every value in the dictionary. This means if you’ve got a dotdict full of CPU tensors, you
+can send them all to the GPU with a single call:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gpu_tensors</span> <span class="o">=</span> <span class="n">cpu_tensors</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>What’s happening here is that the <code class="docutils literal notranslate"><span class="pre">.cuda</span></code> access returns a dotdict full of <code class="docutils literal notranslate"><span class="pre">.cuda</span></code> attributes. Then the call
+itself is forwarded to each tensor, and the results are collected and returned in a tree with the same keys.</p>
+<p>Fair warning: be careful not to use keys in your dotdict that clash with the names of methods you’re likely to
+use.</p>
+</div>
+<div class="section" id="method-chaining">
+<h3>Method Chaining<a class="headerlink" href="#method-chaining" title="Permalink to this headline">¶</a></h3>
+<p>There are a couple of methods on the dotdict itself for making <a class="reference external" href="https://tomaugspurger.github.io/method-chaining.html">method-chaining</a> easier. Method chaining is nice because the computation
+flows left-to-right, top-to-bottom. For example, with <code class="xref py py-func docutils literal notranslate"><span class="pre">pipe()</span></code> you can act on the entire datastructure</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">objs</span><span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+<span class="go">[&#39;a&#39;, &#39;d&#39;]</span>
+</pre></div>
+</div>
+<p>or with <code class="xref py py-func docutils literal notranslate"><span class="pre">map()</span></code> you can act on the leaves</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">objs</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="go">dotdict:</span>
+<span class="go">a    dotdict:</span>
+<span class="go">    b    1.0</span>
+<span class="go">    c    2.0</span>
+<span class="go">d    3.0</span>
+</pre></div>
+</div>
+<p>or with <code class="xref py py-func docutils literal notranslate"><span class="pre">starmap()</span></code> you can combine it with another dotdict</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">objs</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span><span class="nb">int</span><span class="o">.</span><span class="fm">__add__</span><span class="p">,</span> <span class="n">objs</span><span class="p">)</span>
+<span class="go">dotdict:</span>
+<span class="go">a    dotdict:</span>
+<span class="go">    b    2</span>
+<span class="go">    c    4</span>
+<span class="go">d    6</span>
+</pre></div>
+</div>
+<p>or you can do all these things in sequence</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">objs</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="o">.</span><span class="n">starmap</span><span class="p">(</span><span class="nb">float</span><span class="o">.</span><span class="fm">__add__</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="nb">list</span><span class="p">))</span>
+<span class="go">[&#39;a&#39;, &#39;d&#39;]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pretty-printing">
+<h3>Pretty-printing<a class="headerlink" href="#pretty-printing" title="Permalink to this headline">¶</a></h3>
+<p>As you’ve likely noticed, when you nest dotdicts inside themselves then they’re printed prettily:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">objs</span>
+<span class="go">dotdict:</span>
+<span class="go">a    dotdict:</span>
+<span class="go">    b    1</span>
+<span class="go">    c    2</span>
+<span class="go">d    3</span>
+</pre></div>
+</div>
+<p>It’s especially pretty when some of your elements are collections, possibly with shapes and dtypes:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tensors</span>
+<span class="go">arrdict:</span>
+<span class="go">a    Tensor((1,), torch.int64)</span>
+<span class="go">b    arrdict:</span>
+<span class="go">     c    Tensor((1,), torch.int64)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="indexing">
+<h3>Indexing<a class="headerlink" href="#indexing" title="Permalink to this headline">¶</a></h3>
+<p>Indexing is exclusive to arrdicts. On arrdicts, indexing operations are forwarded to the values:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">arrdict:</span>
+<span class="go">a    Tensor((), torch.int64)</span>
+<span class="go">b    arrdict:</span>
+<span class="go">     c    Tensor((), torch.int64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>  <span class="c1"># the .item() call is needed to get it to print nicely</span>
+<span class="go">arrdict:</span>
+<span class="go">a    1</span>
+<span class="go">b    arrdict:</span>
+<span class="go">     c    2</span>
+</pre></div>
+</div>
+<p>All the kinds of indexing that the underlying arrays/tensors support is supported by arrdict.</p>
+</div>
+<div class="section" id="binary-operations">
+<h3>Binary operations<a class="headerlink" href="#binary-operations" title="Permalink to this headline">¶</a></h3>
+<p>Binary operation support is also exclusive to arrdicts. You can combine two arrdicts in all the ways you’d combine
+the underlying items</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tensors</span> <span class="o">+</span> <span class="n">tensors</span>
+<span class="go">arrdict:</span>
+<span class="go">a    Tensor((1,), torch.int64)</span>
+<span class="go">b    arrdict:</span>
+<span class="go">     c    Tensor((1,), torch.int64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">tensors</span> <span class="o">+</span> <span class="n">tensors</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="c1"># the [0].item() call is needed to get it to print nicely</span>
+<span class="go">arrdict:</span>
+<span class="go">a    2</span>
+<span class="go">b    arrdict:</span>
+<span class="go">     c    4</span>
+</pre></div>
+</div>
+<p>It works equally well with Python scalars, arrays, and tensors, and pretty much every binary op you’re likely to use
+is covered. Call <code class="docutils literal notranslate"><span class="pre">dir(arrdict)</span></code> to get a list of the supported magics.</p>
+</div>
+<div class="section" id="use-cases">
+<h3>Use cases<a class="headerlink" href="#use-cases" title="Permalink to this headline">¶</a></h3>
+<p>You generally use dotdict in places that <em>really</em> you should use a <code class="xref py py-class docutils literal notranslate"><span class="pre">namedtuple</span></code>, except that forcing explicit types on
+things would make it harder to change things as you go. Using a dictionary instead lets you keep things flexible. The
+principal costs are that you lose type-safety, and your keys might clash with method names.</p>
+</div>
+</div>
+<div class="section" id="raggeds">
+<span id="id3"></span><h2>Raggeds<a class="headerlink" href="#raggeds" title="Permalink to this headline">¶</a></h2>
+<p>Ragged arrays and tensors are basically arrays-of-arrays, with the values stored in a contiguous backing array to speed up
+operations. <strong>megastep</strong> has both numpy and torch Raggeds, and both are created using <a class="reference internal" href="reference.html#megastep.ragged.Ragged" title="megastep.ragged.Ragged"><code class="xref py py-func docutils literal notranslate"><span class="pre">Ragged()</span></code></a>.</p>
+<p>As an example, here’s a simple ragged array:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">megastep.ragged</span> <span class="kn">import</span> <span class="n">Ragged</span>
+
+<span class="c1"># Subarrays are [0., 1., 2.], [3.], [4., 5.]</span>
+<span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">])</span>
+<span class="n">widths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">Ragged</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">widths</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">widths</span></code> array gives the widths of each subarray.</p>
+<div class="section" id="id4">
+<h3>Indexing<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>Indexing with an integer retrieves the corresponding subarray:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">array([0, 1, 2])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">array([3])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="go">array([4, 5])</span>
+</pre></div>
+</div>
+<p>and it can also be sliced:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+<span class="go">RaggedNumpy([3 1])</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="conversion">
+<h3>Conversion<a class="headerlink" href="#conversion" title="Permalink to this headline">¶</a></h3>
+<p>Numpy raggeds can be turned back-and-forth into Torch raggeds:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">torchify</span><span class="p">()</span>
+<span class="go">&lt;megastepcuda.Ragged1D at 0x7fba25320d30&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">torchify</span><span class="p">()</span><span class="o">.</span><span class="n">numpyify</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Be warned that the torch side of things only supports backing tensors with at most 3 dimensions.</p>
+</div>
+<div class="section" id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
+<p>If you want to do bulk operations on a ragged, you’ll usually want to operate on the backing array directly. There
+are a couple of attributes to help with that:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">vals</span>   <span class="c1"># the backing array</span>
+<span class="go">array([0., 1., 2., 3., 4., 5.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">widths</span> <span class="c1"># the subarray widths</span>
+<span class="go">array([3, 1, 2])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">starts</span> <span class="c1"># indices of the start of each subarray</span>
+<span class="go">array([0, 3, 4])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">ends</span>   <span class="c1"># indices of the end of each subarray</span>
+<span class="go">array([3, 4, 6])</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="inversion">
+<h3>Inversion<a class="headerlink" href="#inversion" title="Permalink to this headline">¶</a></h3>
+<p>There is also an <code class="docutils literal notranslate"><span class="pre">.inverse</span></code> attribute that tells you which subarray every element of the backing array corresponds to:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">inverse</span>
+<span class="go">array([0, 0, 0, 1, 2, 2])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="geometries">
+<span id="geometry"></span><h2>Geometries<a class="headerlink" href="#geometries" title="Permalink to this headline">¶</a></h2>
+<p>A <em>geometry</em> describes the static environment that the agents move around in. They’re usually created by <a class="reference internal" href="reference.html#module-megastep.cubicasa" title="megastep.cubicasa"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cubicasa</span></code></a>
+or with the functions in <a class="reference internal" href="reference.html#module-megastep.toys" title="megastep.toys"><code class="xref py py-mod docutils literal notranslate"><span class="pre">toys</span></code></a> , and then passed en masse to an environment or <a class="reference internal" href="reference.html#megastep.core.Core" title="megastep.core.Core"><code class="xref py py-class docutils literal notranslate"><span class="pre">Core</span></code></a> .</p>
+<p>You can visualize geometries with <a class="reference internal" href="reference.html#megastep.geometry.display" title="megastep.geometry.display"><code class="xref py py-mod docutils literal notranslate"><span class="pre">display</span></code></a> :</p>
+<a class="reference internal image-reference" href="_images/geometry.png"><img alt="A matplotlib visualization of a geometry" src="_images/geometry.png" style="width: 640px;" /></a>
+<p>Practically speaking, a geometry is a <a class="reference internal" href="#dotdicts"><span class="std std-ref">dotdict</span></a> with the following attributes:</p>
+<dl>
+<dt>id</dt><dd><p>An integer uniquely identifying this geometry</p>
+</dd>
+<dt>walls</dt><dd><p>An (M, 2, 2)-array of endpoints of the walls of the geometry, given as (x, y) coordinates in units of meters.</p>
+<p>One ‘weird’ restriction is that all the coordinates should be strictly positive. This is not a fundamental
+restriction, it just makes a bunch of code elsewhere in megastep simpler if the geometry can be assumed to be in
+the top-right quadrant.</p>
+</dd>
+<dt>lights</dt><dd><p>An (N, 2)-array of the locations of the lights in the geometry, again given as (x, y) coordinates</p>
+<p>As with the walls, the lights should all have strictly positive coordinates.</p>
+</dd>
+<dt>masks</dt><dd><p>An (H, W) masking array describing the rooms and free space in the geometry.</p>
+<p>The mask is aligned with its lower-left corner on (0, 0), and each cell is <strong>res</strong> wide and high. You can map
+between the (i, j) indices of the mask and the (x, y) coords of the walls and lights with
+<code class="xref py py-func docutils literal notranslate"><span class="pre">centers()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">indices()</span></code></p>
+<p>The mask is <code class="docutils literal notranslate"><span class="pre">-1</span></code> in cells touching a wall, and otherwise <code class="docutils literal notranslate"><span class="pre">0</span></code> in free space or positive integer if the cell is
+in a room. Each room gets its own positive integer.</p>
+</dd>
+<dt>res</dt><dd><p>A float giving the resolution of <strong>masks</strong> in meters.</p>
+</dd>
+</dl>
+<p>The geometry is a dotdict rather than a class because when writing your own environments, it’s common to want to nail
+extra bits of information onto the side of the default geometry. That <em>could</em> be handled by subclassing, but I have a
+personal <a class="reference internal" href="faq.html#inheritance"><span class="std std-ref">aversion to inheritance hierarchies in research code</span></a>.</p>
+</div>
+<div class="section" id="agents">
+<span id="id5"></span><h2>Agents<a class="headerlink" href="#agents" title="Permalink to this headline">¶</a></h2>
+<p>‘Agents’ can - confusingly - refer to a few different things in megastep. Which is meant is usually clear from context.</p>
+<p>For one, the agent is the thing that interacts with the environment. It receives observations and emits actions, and
+usually it’s controlled by a neural net of some sort. You’ll often see the Pytorch module that holds the policy network
+being called <code class="docutils literal notranslate"><span class="pre">agent</span></code>.</p>
+<p>For two, there’s also the agent-as-a-specific-model-and-camera-in-the-world. Confusingly though, the
+agent-as-a-neural-net can have more than one agent-as-a-model-and-camera that it receives observations from and emits
+actions for. For example, a drone swarm might have a single net that controls multiple drones.</p>
+<p>In terms of behaviour, agents-as-models-and-cameras are represented by the <a class="reference internal" href="reference.html#megastep.cuda.Agents" title="megastep.cuda.Agents"><code class="xref py py-class docutils literal notranslate"><span class="pre">Agents</span></code></a> datastructure.
+This datastructure holds the agents’ positions and velocities, and when you call <a class="reference internal" href="reference.html#megastep.cuda.render" title="megastep.cuda.render"><code class="xref py py-func docutils literal notranslate"><span class="pre">render()</span></code></a>, the
+models in the world are updated to match the positions in the datastructure. The positions in the datastructure are
+also the ones used for <a class="reference internal" href="#rendering"><span class="std std-ref">rendering</span></a>.</p>
+</div>
+<div class="section" id="scenery">
+<span id="id6"></span><h2>Scenery<a class="headerlink" href="#scenery" title="Permalink to this headline">¶</a></h2>
+<p>Scenery is the information the <a class="reference internal" href="#rendering"><span class="std std-ref">renderer</span></a> uses to produce observations and the <a class="reference internal" href="#physics"><span class="std std-ref">physics</span></a> engine uses bounce agents off of things. It is usually - though not necessarily - created by feeding
+<a class="reference internal" href="#geometry"><span class="std std-ref">geometries</span></a> into <code class="xref py py-func docutils literal notranslate"><span class="pre">scenery()</span></code>, and it’s represented by the
+<a class="reference internal" href="reference.html#megastep.cuda.Scenery" title="megastep.cuda.Scenery"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scenery</span></code></a> object.</p>
+<div class="section" id="versus-geometry">
+<h3>Versus Geometry<a class="headerlink" href="#versus-geometry" title="Permalink to this headline">¶</a></h3>
+<p>There are a couple of things that separate scenery from geometry. First, scenery has texture and light intensity
+information that the source geometry is missing. This separation is because generating randomly-varying textures and
+lights is a lot easier than generating high-quality random geometries.</p>
+<p>Secondly, a geometry only represents a single environment, while scenery represents a multitude - typically thousands.
+The <a class="reference internal" href="reference.html#megastep.cuda.Scenery" title="megastep.cuda.Scenery"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scenery</span></code></a> object stores all this information in a dense format that the rendering and physics
+kernels can access efficiently.</p>
+<p>Finally, a geometry doesn’t specify how many agent-models there are. Scenery does.</p>
+</div>
+<div class="section" id="implementation-details">
+<h3>Implementation Details<a class="headerlink" href="#implementation-details" title="Permalink to this headline">¶</a></h3>
+<p>The most important - and most confusing - parts of the scenery object are the <a class="reference internal" href="reference.html#megastep.cuda.Scenery.lines" title="megastep.cuda.Scenery.lines"><code class="xref py py-attr docutils literal notranslate"><span class="pre">lines</span></code></a>
+and the <a class="reference internal" href="reference.html#megastep.cuda.Scenery.textures" title="megastep.cuda.Scenery.textures"><code class="xref py py-attr docutils literal notranslate"><span class="pre">textures</span></code></a>.</p>
+<p>The lines are a <a class="reference internal" href="#raggeds"><span class="std std-ref">ragged</span></a> giving the, well, lines for each environment. If you index into it at position
+<code class="docutils literal notranslate"><span class="pre">i</span></code>, you’ll get back a (n_lines, 2, 2)-tensor giving the endpoints of all the lines in that environment. The first
+<code class="docutils literal notranslate"><span class="pre">n_agents</span> <span class="pre">*</span> <span class="pre">model_size</span></code> lines of each environment are the lines of that environment’s agents, with the first agent
+occupying the first <code class="docutils literal notranslate"><span class="pre">model_size</span></code> lines and so on.</p>
+<p>The textures are another <a class="reference internal" href="#raggeds"><span class="std std-ref">ragged</span></a> giving the texels for each line. The texels are a fixed-resolution (5cm
+default) texture for the lines. If line <code class="docutils literal notranslate"><span class="pre">j</span></code> is 1m long, then indexing into the textures at <code class="docutils literal notranslate"><span class="pre">j</span></code> will give you
+a 20-element array with the colour of the line in each 5cm interval.</p>
+<p>As well as the lines and textures, there’s also <a class="reference internal" href="reference.html#megastep.cuda.Scenery.baked" title="megastep.cuda.Scenery.baked"><code class="xref py py-attr docutils literal notranslate"><span class="pre">baked</span></code></a>, which the
+<a class="reference internal" href="reference.html#megastep.cuda.bake" title="megastep.cuda.bake"><code class="xref py py-func docutils literal notranslate"><span class="pre">bake()</span></code></a> call fills with precomputed illumination.</p>
+</div>
+</div>
+<div class="section" id="rendering">
+<span id="id7"></span><h2>Rendering<a class="headerlink" href="#rendering" title="Permalink to this headline">¶</a></h2>
+<p>TODO-DOCS Rendering concept</p>
+</div>
+<div class="section" id="physics">
+<span id="id8"></span><h2>Physics<a class="headerlink" href="#physics" title="Permalink to this headline">¶</a></h2>
+<p>TODO-DOCS Physics concept</p>
+</div>
+<div class="section" id="plotting">
+<span id="id9"></span><h2>Plotting<a class="headerlink" href="#plotting" title="Permalink to this headline">¶</a></h2>
+<p>TODO-DOCS Plotting concept</p>
+</div>
+<div class="section" id="decision-world">
+<span id="id10"></span><h2>Decision &amp; World<a class="headerlink" href="#decision-world" title="Permalink to this headline">¶</a></h2>
+<p>TODO-DOCS Decision/world concept</p>
+</div>
+<div class="section" id="models">
+<span id="id11"></span><h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h2>
+<p>TODO-DOCS Models concept</p>
+</div>
+<div class="section" id="subpackages">
+<span id="id12"></span><h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<p>TODO-DOCS Subpackages concept</p>
+</div>
+<div class="section" id="spaces-heads">
+<span id="spaces"></span><h2>Spaces &amp; Heads<a class="headerlink" href="#spaces-heads" title="Permalink to this headline">¶</a></h2>
+<p>TODO-DOCS Spaces and heads concept</p>
+</div>
+<div class="section" id="env-patterns">
+<span id="patterns"></span><h2>Env Patterns<a class="headerlink" href="#env-patterns" title="Permalink to this headline">¶</a></h2>
+<p>TODO-DOCS Env patterns concept</p>
+<ul class="simple">
+<li><p>Use modules where possible</p></li>
+<li><p>Get your plotter working first</p></li>
+<li><p>A display method</p></li>
+<li><p>A _reset method</p></li>
+<li><p>A _observe method</p></li>
+<li><p>n_envs and device</p></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Andy L. Jones.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/concepts.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
